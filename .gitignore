@@ -2,3 +2,7 @@ node_modules/
 .env
 dist/
 .DS_Store
+
+# Uploaded submission files — keep the folder, never commit its contents
+server/uploads/*
+!server/uploads/.gitkeep
