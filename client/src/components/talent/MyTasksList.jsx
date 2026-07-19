@@ -89,7 +89,7 @@ const MyTasksList = ({ tasks, onRefresh }) => {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer border transition-all"
                   style={{
                     background: 'rgba(59,130,246,0.08)',
-                    color: '#60A5FA',
+                    color: 'var(--rt-badge-submitted-tx)',
                     borderColor: 'rgba(59,130,246,0.25)',
                     fontFamily: 'Inter, sans-serif',
                     transition: 'background 0.15s, border-color 0.15s',

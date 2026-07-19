@@ -72,7 +72,7 @@ const LoginPage = () => {
 
         <p className="mt-7 text-sm text-text-muted text-center relative z-10 animate-fade-slide" style={{ animationDelay: '0.25s', animationFillMode: 'both' }}>
           New candidate?{' '}
-          <Link to="/register" className="text-primary font-medium hover:text-white hover:underline transition-all duration-200">
+          <Link to="/register" className="text-primary font-medium hover:text-primary-dark hover:underline transition-all duration-200">
             Setup your profile
           </Link>
         </p>

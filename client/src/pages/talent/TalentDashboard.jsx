@@ -46,7 +46,7 @@ const TalentDashboard = () => {
 
         {error && (
           <p className="text-[13px] mb-4 px-4 py-3 rounded-lg"
-            style={{ color: '#F87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+            style={{ color: 'var(--rt-badge-rejected-tx)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
             {error}
           </p>
         )}

@@ -38,14 +38,14 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
 
   return (
     <div className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center z-[200] p-6"
-      onClick={onClose}>
-      <div className="bg-bg-card border border-border rounded-xl w-full max-w-xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] animate-modal-in"
+      onClick={saving ? undefined : onClose}>
+      <div className="bg-bg-card border border-border rounded-xl w-full max-w-xl shadow-[var(--rt-shadow-modal)] animate-modal-in"
         onClick={(e) => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <h2 className="text-[17px] font-semibold text-text-primary">Create New Task</h2>
-          <button onClick={onClose}
+          <button onClick={onClose} disabled={saving}
             className="bg-transparent border-none text-text-muted text-base cursor-pointer px-2 py-1 rounded-md hover:bg-bg-hover hover:text-text-primary transition-all">✕</button>
         </div>
 
