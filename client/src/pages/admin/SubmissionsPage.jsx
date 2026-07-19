@@ -116,16 +116,29 @@ const SubmissionsPage = () => {
                         </span>
                       </td>
 
-                      {/* File link */}
+                      {/* Files — supports multiple (#21) */}
                       <td className={tdCls}>
-                        {sub.fileUrl ? (
-                          <a href={sub.fileUrl} target="_blank" rel="noreferrer"
-                            className="text-primary text-[13px] hover:text-secondary underline underline-offset-2 transition-colors">
-                            View ↗
-                          </a>
-                        ) : (
-                          <span className="text-text-faint text-[13px] italic">None</span>
-                        )}
+                        {(() => {
+                          const files = (sub.fileUrls && sub.fileUrls.length)
+                            ? sub.fileUrls
+                            : (sub.fileUrl ? [sub.fileUrl] : []);
+                          if (files.length === 0) {
+                            return <span className="text-text-faint text-[13px] italic">None</span>;
+                          }
+                          return (
+                            <div className="flex flex-col gap-0.5">
+                              {files.slice(0, 3).map((url, i) => (
+                                <a key={i} href={url} target="_blank" rel="noreferrer"
+                                  className="text-primary text-[13px] hover:text-secondary underline underline-offset-2 transition-colors whitespace-nowrap">
+                                  File {i + 1} ↗
+                                </a>
+                              ))}
+                              {files.length > 3 && (
+                                <span className="text-text-faint text-[11px]">+{files.length - 3} more</span>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Submitted at — raw ISO */}
