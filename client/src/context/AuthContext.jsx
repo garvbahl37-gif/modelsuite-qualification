@@ -26,4 +26,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- co-locating the hook with its provider is a standard Context pattern
 export const useAuth = () => useContext(AuthContext);
