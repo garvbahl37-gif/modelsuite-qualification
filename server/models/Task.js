@@ -9,7 +9,9 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected'],
+      // 'Completed' is the terminal state a task reaches once one of its
+      // submissions is approved (see submissionController.reviewSubmission).
+      enum: ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected', 'Completed'],
     },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,

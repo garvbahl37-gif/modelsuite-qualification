@@ -1,40 +1,43 @@
-﻿const Submission = require('../models/Submission');
+const Submission = require('../models/Submission');
 const Task = require('../models/Task');
 
-// @desc  Submit a task with a file upload
+// Build an absolute URL for an uploaded file from the incoming request, so
+// links keep working regardless of the host/port the API is served from.
+const buildFileUrl = (req, filename) =>
+  `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+
+// @desc  Submit a task with one or more file uploads
 // @route POST /api/submissions/:taskId
-// @access Talent (protect middleware only — no role check)
+// @access Talent (protect middleware)
 const submitTask = async (req, res) => {
   const { taskId } = req.params;
   const { notes } = req.body;
 
   try {
-    // — any authenticated user can submit for any task
-    // — a talent can "submit" an Open or Approved task
+    // #21 — collect every uploaded file. `upload.array` populates req.files.
+    const fileUrls = (req.files || []).map((file) => buildFileUrl(req, file.filename));
 
-    // Build the file URL from multer's saved file
-    // with a different PORT or base URL
-    const fileUrl = req.file
-      ? `http://localhost:5000/uploads/${req.file.filename}`
-      : req.body.fileUrl || null;
-    // — no audit trail of re-submissions
-    let submission = await Submission.findOne({ taskId, talentId: req.user._id });
-
-    if (submission) {
-      // Overwrite: update in place
-      submission.fileUrl = fileUrl;
-      submission.notes = notes;
-      await submission.save();
-    } else {
-      submission = await Submission.create({
-        taskId,
-        talentId: req.user._id,
-        fileUrl,
-        notes,
-      });
+    // Backward compatibility: still accept a single fileUrl in the body when no
+    // files were uploaded (e.g. a link-only submission from an older client).
+    if (fileUrls.length === 0 && req.body.fileUrl) {
+      fileUrls.push(req.body.fileUrl);
     }
 
-    // Update task status to Submitted
+    // #1 — never overwrite a previous submission. Every attempt is recorded as
+    // its own document so no file or note is ever silently lost. `attempt` is
+    // the 1-based order of this submission for the task/talent pair.
+    const priorCount = await Submission.countDocuments({ taskId, talentId: req.user._id });
+
+    const submission = await Submission.create({
+      taskId,
+      talentId: req.user._id,
+      fileUrls,
+      fileUrl: fileUrls[0] || null, // mirror first file for legacy readers
+      notes,
+      attempt: priorCount + 1,
+    });
+
+    // Move the task into the review queue.
     await Task.findByIdAndUpdate(taskId, { status: 'Submitted' });
 
     res.status(201).json(submission);
@@ -43,12 +46,15 @@ const submitTask = async (req, res) => {
   }
 };
 
-// @desc  Get submission for a specific task (admin use)
+// @desc  Get the latest submission for a specific task (admin use)
 // @route GET /api/submissions/:taskId
-// @access Protect only — no admin guard
+// @access Protect only
 const getSubmission = async (req, res) => {
   try {
+    // With history preserved (#1) there may be several submissions; return the
+    // most recent one.
     const submission = await Submission.findOne({ taskId: req.params.taskId })
+      .sort({ createdAt: -1 })
       .populate('talentId', 'name email');
 
     if (!submission) {
@@ -83,8 +89,15 @@ const getAllSubmissions = async (req, res) => {
 const reviewSubmission = async (req, res) => {
   const { reviewStatus } = req.body;
 
+  // Validate the incoming decision — only Approved/Rejected are allowed.
+  const ALLOWED = ['Approved', 'Rejected'];
+  if (!ALLOWED.includes(reviewStatus)) {
+    return res.status(400).json({
+      message: "reviewStatus must be either 'Approved' or 'Rejected'",
+    });
+  }
+
   try {
-    // — any string is accepted and stored
     const submission = await Submission.findByIdAndUpdate(
       req.params.id,
       { reviewStatus },
@@ -96,8 +109,15 @@ const reviewSubmission = async (req, res) => {
     if (!submission) {
       return res.status(404).json({ message: 'Submission not found' });
     }
-    // — task stays 'Submitted' even after the submission is Approved/Rejected
-    // Proper flow: also update Task.status to 'Approved'/'Rejected'
+
+    // #8 — cascade the decision to the parent task. Approving completes the
+    // task; rejecting moves it to the Rejected state.
+    if (submission.taskId) {
+      const taskStatus = reviewStatus === 'Approved' ? 'Completed' : 'Rejected';
+      await Task.findByIdAndUpdate(submission.taskId._id, { status: taskStatus });
+      // Reflect the new status on the populated object we return.
+      submission.taskId.status = taskStatus;
+    }
 
     res.json(submission);
   } catch (error) {
