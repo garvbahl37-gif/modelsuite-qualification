@@ -1,4 +1,18 @@
 ﻿const Task = require('../models/Task');
+const User = require('../models/User');
+
+// #2 — a task may only ever be assigned to a user whose role is 'Talent'.
+// Returns an error message string when the assignee is invalid, or null when
+// the assignee is acceptable (including when there is no assignee at all).
+const validateAssignee = async (assignedTo) => {
+  if (!assignedTo) return null; // unassigned is fine
+  const assignee = await User.findById(assignedTo);
+  if (!assignee) return 'Assigned user not found';
+  if (assignee.role !== 'Talent') {
+    return 'Tasks can only be assigned to users with the Talent role';
+  }
+  return null;
+};
 
 // @desc  Get all tasks
 // @route GET /api/tasks
@@ -41,6 +55,9 @@ const createTask = async (req, res) => {
   const { title, description, status, assignedTo, dueDate } = req.body;
 
   try {
+    const assigneeError = await validateAssignee(assignedTo);
+    if (assigneeError) return res.status(400).json({ message: assigneeError });
+
     const task = await Task.create({
       title,
       description,
@@ -63,7 +80,13 @@ const updateTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
-    // including internal fields like createdBy or __v
+
+    // #2 — validate the assignee whenever the update touches assignedTo.
+    if (Object.prototype.hasOwnProperty.call(req.body, 'assignedTo')) {
+      const assigneeError = await validateAssignee(req.body.assignedTo);
+      if (assigneeError) return res.status(400).json({ message: assigneeError });
+    }
+
     const updated = await Task.findByIdAndUpdate(
       req.params.id,
       { ...req.body },
