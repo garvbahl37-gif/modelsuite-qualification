@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../ThemeToggle';
 
 /* ── Clean SVG line-art icons (no emojis, no AI icons) ── */
 const IconDashboard = () => (
@@ -53,7 +54,7 @@ const Sidebar = () => {
 
   return (
     <aside className="fixed inset-y-0 left-0 w-[240px] flex flex-col z-50"
-      style={{ background: '#0D0D0D' }}>
+      style={{ background: 'var(--rt-bg-surface)', borderRight: '1px solid var(--rt-border)' }}>
 
       {/* Brand */}
       <div className="flex items-center justify-center px-5 py-6">
@@ -65,7 +66,7 @@ const Sidebar = () => {
       {/* Nav */}
       <nav className="flex flex-col gap-0.5 flex-1 px-3 pt-5">
         <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] px-2 mb-2"
-          style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Inter, sans-serif' }}>
+          style={{ color: 'var(--rt-text-faint)', fontFamily: 'Inter, sans-serif' }}>
           Menu
         </p>
 
@@ -92,19 +93,22 @@ const Sidebar = () => {
             </div>
             <div className="min-w-0">
               <p className="text-[13px] font-semibold truncate max-w-[110px]"
-                style={{ color: '#E5E2E1', fontFamily: 'Inter, sans-serif' }}>
+                style={{ color: 'var(--rt-text-secondary)', fontFamily: 'Inter, sans-serif' }}>
                 {user?.name}
               </p>
-              <p className="text-[11px]" style={{ color: '#4B5563' }}>Admin</p>
+              <p className="text-[11px]" style={{ color: 'var(--rt-text-dim)' }}>Admin</p>
             </div>
           </div>
 
-          <button
-            onClick={() => { logout(); navigate('/login'); }}
-            title="Sign out"
-            className="logout-btn">
-            <IconLogout />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <ThemeToggle />
+            <button
+              onClick={() => { logout(); navigate('/login'); }}
+              title="Sign out"
+              className="logout-btn">
+              <IconLogout />
+            </button>
+          </div>
         </div>
       </div>
     </aside>

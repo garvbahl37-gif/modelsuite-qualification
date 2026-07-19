@@ -8,6 +8,7 @@ const STATUS_CLASS = {
   Submitted: 'status-badge-Submitted',
   Approved:  'status-badge-Approved',
   Rejected:  'status-badge-Rejected',
+  Completed: 'status-badge-Completed',
 };
 
 /* ── Calendar icon ── */
@@ -42,9 +43,9 @@ const MyTasksList = ({ tasks, onRefresh }) => {
     return (
       <div className="py-12 px-6 text-center rounded-xl"
         style={{
-          background: 'rgba(255,255,255,0.015)',
-          border: '1px dashed rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.3)',
+          background: 'var(--rt-bg-elevated)',
+          border: '1px dashed var(--rt-border-light)',
+          color: 'var(--rt-text-faint)',
           fontSize: '13px',
           fontFamily: 'Inter, sans-serif',
         }}>
@@ -69,11 +70,11 @@ const MyTasksList = ({ tasks, onRefresh }) => {
             {/* Task info */}
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate mb-0.5"
-                style={{ fontSize: '13.5px', color: '#E5E2E1', fontFamily: 'Inter, sans-serif' }}>
+                style={{ fontSize: '13.5px', color: 'var(--rt-text-secondary)', fontFamily: 'Inter, sans-serif' }}>
                 {task.title || 'Untitled Task'}
               </p>
               {fmtDate(task.dueDate) && (
-                <p className="flex items-center gap-1.5 text-[11.5px]" style={{ color: '#4B5563' }}>
+                <p className="flex items-center gap-1.5 text-[11.5px]" style={{ color: 'var(--rt-text-dim)' }}>
                   <IconCalendar />
                   Due {fmtDate(task.dueDate)}
                 </p>

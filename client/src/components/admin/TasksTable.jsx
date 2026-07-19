@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { deleteTask } from '../../api/tasks';
+import Spinner from '../Spinner';
 
 /* ── SVG Action Icons ── */
 const IconEdit = () => (
@@ -39,24 +41,30 @@ const STATUS_CLASS = {
   Submitted: 'status-badge-Submitted',
   Approved:  'status-badge-Approved',
   Rejected:  'status-badge-Rejected',
+  Completed: 'status-badge-Completed',
 };
 
 const TasksTable = ({ tasks, onEdit, onRefresh }) => {
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
+    if (deletingId) return;
+    setDeletingId(id);
     try {
       await deleteTask(id);
       onRefresh();
     } catch {
       alert('Failed to delete task');
+    } finally {
+      setDeletingId(null);
     }
   };
 
   if (tasks.length === 0) {
     return (
-      <div className="py-20 text-center" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>
+      <div className="py-20 text-center" style={{ color: 'var(--rt-text-faint)', fontSize: '14px' }}>
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"
-          style={{ margin: '0 auto 12px', opacity: 0.3 }} strokeLinecap="round" strokeLinejoin="round">
+          style={{ margin: '0 auto 12px', opacity: 0.5 }} strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="3"/>
           <path d="M9 12h6M9 8h6M9 16h4"/>
         </svg>
@@ -87,11 +95,11 @@ const TasksTable = ({ tasks, onEdit, onRefresh }) => {
               {/* Title + description */}
               <td className="table-td" style={{ maxWidth: '260px' }}>
                 <span className="block font-semibold truncate"
-                  style={{ color: '#E5E2E1', fontFamily: 'Inter, sans-serif', marginBottom: '2px' }}>
+                  style={{ color: 'var(--rt-text-secondary)', fontFamily: 'Inter, sans-serif', marginBottom: '2px' }}>
                   {task.title || '—'}
                 </span>
                 {task.description && (
-                  <span className="block truncate" style={{ color: '#4B5563', fontSize: '12px', maxWidth: '240px' }}>
+                  <span className="block truncate" style={{ color: 'var(--rt-text-dim)', fontSize: '12px', maxWidth: '240px' }}>
                     {task.description}
                   </span>
                 )}
@@ -118,20 +126,20 @@ const TasksTable = ({ tasks, onEdit, onRefresh }) => {
                       }}>
                       {task.assignedTo.name?.[0]?.toUpperCase()}
                     </div>
-                    <span style={{ color: '#E5E2E1' }}>{task.assignedTo.name}</span>
+                    <span style={{ color: 'var(--rt-text-secondary)' }}>{task.assignedTo.name}</span>
                   </div>
                 ) : (
-                  <span style={{ color: '#4B5563', fontSize: '13px' }}>Unassigned</span>
+                  <span style={{ color: 'var(--rt-text-dim)', fontSize: '13px' }}>Unassigned</span>
                 )}
               </td>
 
               {/* Due date */}
-              <td className="table-td" style={{ color: '#6B7280', whiteSpace: 'nowrap' }}>
+              <td className="table-td" style={{ color: 'var(--rt-text-muted)', whiteSpace: 'nowrap' }}>
                 {fmtDate(task.dueDate)}
               </td>
 
               {/* Created */}
-              <td className="table-td" style={{ color: '#4B5563', whiteSpace: 'nowrap', fontSize: '12.5px' }}>
+              <td className="table-td" style={{ color: 'var(--rt-text-dim)', whiteSpace: 'nowrap', fontSize: '12.5px' }}>
                 {fmtDate(task.createdAt)}
               </td>
 
@@ -140,15 +148,17 @@ const TasksTable = ({ tasks, onEdit, onRefresh }) => {
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => onEdit(task)}
+                    disabled={deletingId === task._id}
                     title="Edit task"
                     className="action-btn action-btn-edit">
                     <IconEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(task._id)}
+                    disabled={deletingId === task._id}
                     title="Delete task"
                     className="action-btn action-btn-delete">
-                    <IconDelete />
+                    {deletingId === task._id ? <Spinner size={13} /> : <IconDelete />}
                   </button>
                 </div>
               </td>

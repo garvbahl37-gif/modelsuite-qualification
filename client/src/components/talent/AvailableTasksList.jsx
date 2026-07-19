@@ -4,7 +4,7 @@ const AvailableTasksList = ({ tasks, onClaimed }) => {
   if (!tasks || tasks.length === 0) {
     return (
       <div className="bg-bg-card border border-dashed border-border rounded-xl py-10 px-6 text-center text-text-faint text-sm">
-        🎉 No open tasks right now — check back later!
+        No open tasks right now — check back later!
       </div>
     );
   }

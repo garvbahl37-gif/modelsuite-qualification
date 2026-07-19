@@ -43,14 +43,15 @@ const AdminDashboard = () => {
     total:     tasks.length,
     open:      tasks.filter((t) => t.status === 'Open').length,
     submitted: tasks.filter((t) => t.status === 'Submitted').length,
-    approved:  tasks.filter((t) => t.status === 'Approved').length,
+    // Approving a submission moves its task to 'Completed' (#8).
+    completed: tasks.filter((t) => t.status === 'Completed').length,
   };
 
   const statCards = [
-    { label: 'Total Tasks', value: stats.total,     colorClass: 'stat-card-default', valueColor: '#E5E2E1' },
-    { label: 'Open',        value: stats.open,      colorClass: 'stat-card-blue',    valueColor: '#60A5FA' },
-    { label: 'Submitted',   value: stats.submitted, colorClass: 'stat-card-info',    valueColor: '#60A5FA' },
-    { label: 'Approved',    value: stats.approved,  colorClass: 'stat-card-green',   valueColor: '#34D399' },
+    { label: 'Total Tasks', value: stats.total,     colorClass: 'stat-card-default', valueColor: 'var(--rt-text-primary)' },
+    { label: 'Open',        value: stats.open,      colorClass: 'stat-card-blue',    valueColor: 'var(--rt-primary)' },
+    { label: 'Submitted',   value: stats.submitted, colorClass: 'stat-card-info',    valueColor: 'var(--rt-primary)' },
+    { label: 'Completed',   value: stats.completed, colorClass: 'stat-card-green',   valueColor: 'var(--rt-badge-approved-tx)' },
   ];
 
   /* Filter tasks */
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
   });
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#050505' }}>
+    <div className="flex min-h-screen" style={{ background: 'var(--rt-bg-dark)' }}>
       <Sidebar />
 
       <main className="ml-[240px] flex-1 px-8 py-8" style={{ maxWidth: 'calc(100vw - 240px)' }}>
@@ -72,10 +73,10 @@ const AdminDashboard = () => {
         <div className="flex items-center justify-between mb-7 page-section">
           <div>
             <h1 className="font-display text-[22px] font-semibold tracking-tight"
-              style={{ color: '#F0F0F0', fontFamily: 'Poppins, sans-serif' }}>
+              style={{ color: 'var(--rt-text-primary)', fontFamily: 'Poppins, sans-serif' }}>
               Task Management
             </h1>
-            <p className="mt-0.5 text-[13px]" style={{ color: '#6B7280' }}>
+            <p className="mt-0.5 text-[13px]" style={{ color: 'var(--rt-text-muted)' }}>
               Create, assign, and track all tasks across your talent pool.
             </p>
           </div>
@@ -93,7 +94,7 @@ const AdminDashboard = () => {
           {statCards.map(({ label, value, colorClass, valueColor }) => (
             <div key={label} className={`stat-card ${colorClass}`}>
               <span className="block text-[10.5px] font-semibold uppercase tracking-[0.08em] mb-3"
-                style={{ color: '#4B5563', fontFamily: 'Inter, sans-serif' }}>
+                style={{ color: 'var(--rt-text-dim)', fontFamily: 'Inter, sans-serif' }}>
                 {label}
               </span>
               <span className="block text-[32px] font-bold leading-none"
@@ -110,14 +111,14 @@ const AdminDashboard = () => {
           <div className="table-header-bar">
             <div className="flex items-center gap-2">
               <h2 className="text-[15px] font-semibold"
-                style={{ color: '#E5E2E1', fontFamily: 'Poppins, sans-serif' }}>
+                style={{ color: 'var(--rt-text-secondary)', fontFamily: 'Poppins, sans-serif' }}>
                 All Tasks
               </h2>
               <span className="text-[11px] px-2 py-0.5 rounded-full"
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#6B7280',
-                  border: '1px solid rgba(255,255,255,0.09)',
+                  background: 'var(--rt-bg-input)',
+                  color: 'var(--rt-text-muted)',
+                  border: '1px solid var(--rt-border)',
                   fontFamily: 'Inter, sans-serif',
                 }}>
                 {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
@@ -127,7 +128,7 @@ const AdminDashboard = () => {
             <div className="flex items-center gap-2.5 flex-wrap">
               {/* Search */}
               <div className="relative">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: '#4B5563' }}>
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--rt-text-dim)' }}>
                   <IconSearch />
                 </span>
                 <input
@@ -152,6 +153,7 @@ const AdminDashboard = () => {
                 <option value="Submitted">Submitted</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
           </div>
