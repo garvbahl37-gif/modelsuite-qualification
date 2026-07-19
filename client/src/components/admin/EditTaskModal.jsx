@@ -1,7 +1,8 @@
 ﻿import { useState } from 'react';
 import { updateTask, fetchTalents } from '../../api/tasks';
+import Spinner from '../Spinner';
 
-const STATUS_OPTIONS = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected'];
+const STATUS_OPTIONS = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected', 'Completed'];
 const inputCls = 'w-full bg-bg-input border border-border rounded-lg px-3.5 py-2.5 text-sm text-text-primary outline-none placeholder:text-[#4e4a6e] focus:border-primary focus:ring-[3px] focus:ring-primary/15 transition-all font-sans resize-y';
 const labelCls = 'text-[11px] font-semibold uppercase tracking-[0.5px] text-text-muted';
 
@@ -14,6 +15,7 @@ const EditTaskModal = ({ task, onClose, onUpdated }) => {
     dueDate:     task.dueDate     || '',
   });
   const [talents, setTalents] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   useState(() => {
     fetchTalents().then(({ data }) => setTalents(data)).catch(() => {});
@@ -23,12 +25,15 @@ const EditTaskModal = ({ task, onClose, onUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
     try {
       const { data } = await updateTask(task._id, { ...form, assignedTo: form.assignedTo || null });
       onUpdated(data);
       onClose();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update task');
+      setSaving(false);
     }
   };
 
@@ -79,13 +84,13 @@ const EditTaskModal = ({ task, onClose, onUpdated }) => {
           </div>
 
           <div className="flex justify-end gap-2.5 pt-1 border-t border-border mt-1">
-            <button type="button" onClick={onClose}
+            <button type="button" onClick={onClose} disabled={saving}
               className="px-5 py-2.5 bg-bg-input text-text-muted border border-border rounded-lg text-sm font-medium cursor-pointer hover:bg-bg-hover hover:text-text-primary transition-all font-sans">
               Cancel
             </button>
-            <button type="submit"
-              className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white cursor-pointer btn-gradient border-none font-sans">
-              Save Changes
+            <button type="submit" disabled={saving}
+              className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white cursor-pointer btn-gradient border-none font-sans flex items-center justify-center gap-2 min-w-[140px]">
+              {saving ? (<><Spinner size={15} /> Saving...</>) : 'Save Changes'}
             </button>
           </div>
         </form>

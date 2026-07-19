@@ -1,7 +1,8 @@
 ﻿import { useState } from 'react';
 import { createTask, fetchTalents } from '../../api/tasks';
+import Spinner from '../Spinner';
 
-const STATUS_OPTIONS = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected'];
+const STATUS_OPTIONS = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected', 'Completed'];
 
 const inputCls  = 'w-full bg-bg-input border border-border rounded-lg px-3.5 py-2.5 text-sm text-text-primary outline-none placeholder:text-[#4e4a6e] focus:border-primary focus:ring-[3px] focus:ring-primary/15 transition-all font-sans resize-y';
 const labelCls  = 'text-[11px] font-semibold uppercase tracking-[0.5px] text-text-muted';
@@ -10,6 +11,7 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
   const [form, setForm] = useState({ title: '', description: '', status: 'Open', assignedTo: '', dueDate: '' });
   const [talents, setTalents] = useState([]);
   const [loadingTalents, setLoadingTalents] = useState(false);
+  const [saving, setSaving] = useState(false);
   useState(() => {
     setLoadingTalents(true);
     fetchTalents()
@@ -22,12 +24,15 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
     try {
       const { data } = await createTask({ ...form, assignedTo: form.assignedTo || undefined });
       onCreated(data);
       onClose();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to create task');
+      setSaving(false);
     }
   };
 
@@ -86,13 +91,13 @@ const CreateTaskModal = ({ onClose, onCreated }) => {
           </div>
 
           <div className="flex justify-end gap-2.5 pt-1 border-t border-border mt-1">
-            <button type="button" onClick={onClose}
+            <button type="button" onClick={onClose} disabled={saving}
               className="px-5 py-2.5 bg-bg-input text-text-muted border border-border rounded-lg text-sm font-medium cursor-pointer hover:bg-bg-hover hover:text-text-primary transition-all font-sans">
               Cancel
             </button>
-            <button type="submit"
-              className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white cursor-pointer btn-gradient border-none font-sans">
-              Create Task
+            <button type="submit" disabled={saving}
+              className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white cursor-pointer btn-gradient border-none font-sans flex items-center justify-center gap-2 min-w-[130px]">
+              {saving ? (<><Spinner size={15} /> Creating...</>) : 'Create Task'}
             </button>
           </div>
         </form>

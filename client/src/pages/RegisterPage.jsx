@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
+import Spinner from '../components/Spinner';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Logo = () => (
   <img src="/modelsuite-talents.png" alt="ModelSuite Talents Logo" className="w-80 h-auto object-contain mx-auto block hover:scale-105 transition-transform duration-300" />
@@ -15,17 +17,22 @@ const RegisterPage = () => {
   const [email, setEmail]     = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole]       = useState('Talent');
+  const [loading, setLoading] = useState(false);
   const { login }  = useAuth();
   const navigate   = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    setLoading(true);
     try {
       const { data } = await API.post('/auth/register', { name, email, password, role });
       login(data);
+      // Navigation unmounts this page, so we keep the pending state on success.
       data.role === 'Admin' ? navigate('/admin/dashboard') : navigate('/talent/dashboard');
     } catch (err) {
       alert(err.response?.data?.message || 'Registration failed');
+      setLoading(false);
     }
   };
 
@@ -33,6 +40,9 @@ const RegisterPage = () => {
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[480px_1fr]">
       {/* ── Left: Form panel ── */}
       <div className="relative flex flex-col justify-center px-14 py-16 bg-bg-card border-r border-border overflow-hidden sidebar-glow animate-fade-in">
+        <div className="absolute top-6 right-6 z-20">
+          <ThemeToggle />
+        </div>
         <div className="mb-6 relative z-10 animate-fade-slide" style={{ filter: 'drop-shadow(0 4px 16px rgba(59,130,246,0.3))', animationDelay: '0.1s', animationFillMode: 'both' }}>
           <Logo id="reg-grad" />
         </div>
@@ -69,9 +79,9 @@ const RegisterPage = () => {
             </select>
           </div>
 
-          <button type="submit"
-            className="mt-2 w-full py-3.5 rounded-[10px] text-[15px] font-semibold text-white cursor-pointer btn-gradient border-none hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200">
-            Setup Profile
+          <button type="submit" disabled={loading}
+            className="mt-2 w-full py-3.5 rounded-[10px] text-[15px] font-semibold text-white cursor-pointer btn-gradient border-none hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200 flex items-center justify-center gap-2">
+            {loading ? (<><Spinner size={16} /> Creating profile...</>) : 'Setup Profile'}
           </button>
         </form>
 
@@ -83,8 +93,8 @@ const RegisterPage = () => {
         </p>
       </div>
 
-      {/* ── Right: Visual panel ── */}
-      <div className="hidden lg:flex flex-col items-center justify-center relative overflow-hidden p-16 animate-fade-in min-h-screen"
+      {/* ── Right: Visual panel (always dark — theme-dark-scope) ── */}
+      <div className="theme-dark-scope hidden lg:flex flex-col items-center justify-center relative overflow-hidden p-16 animate-fade-in min-h-screen"
         style={{ background: 'linear-gradient(140deg, #050505 0%, #111111 50%, #000000 100%)', animationDelay: '0.1s', animationFillMode: 'both' }}>
         
         {/* Top Right Info Icon */}
