@@ -1,4 +1,5 @@
-﻿const Task = require('../models/Task');
+﻿const mongoose = require('mongoose');
+const Task = require('../models/Task');
 const User = require('../models/User');
 
 // #2 — a task may only ever be assigned to a user whose role is 'Talent'.
@@ -6,6 +7,8 @@ const User = require('../models/User');
 // the assignee is acceptable (including when there is no assignee at all).
 const validateAssignee = async (assignedTo) => {
   if (!assignedTo) return null; // unassigned is fine
+  // A malformed id must produce a clean 400, not a Mongoose CastError -> 500.
+  if (!mongoose.Types.ObjectId.isValid(assignedTo)) return 'Assigned user not found';
   const assignee = await User.findById(assignedTo);
   if (!assignee) return 'Assigned user not found';
   if (assignee.role !== 'Talent') {

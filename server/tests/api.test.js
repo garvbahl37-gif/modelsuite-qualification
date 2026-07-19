@@ -121,6 +121,41 @@ describe('#2 — task assignment role guard', () => {
     assert.equal(res.status, 400);
     assert.match(res.body.message, /Talent/);
   });
+
+  it('returns 400 (not 500) for a malformed assignee id', async () => {
+    const admin = await registerUser('Admin One', 'admin1@test.com', 'Admin');
+    const res = await request(app)
+      .post('/api/tasks')
+      .set(auth(admin.token))
+      .send({ title: 'Task', status: 'Open', assignedTo: 'not-a-valid-id' });
+    assert.equal(res.status, 400);
+  });
+
+  it('forbids an Admin from claiming (self-assigning) an open task', async () => {
+    const admin = await registerUser('Admin One', 'admin1@test.com', 'Admin');
+    const created = await request(app)
+      .post('/api/tasks')
+      .set(auth(admin.token))
+      .send({ title: 'Claimable', status: 'Open' });
+    const res = await request(app)
+      .put(`/api/talent/tasks/${created.body._id}/claim`)
+      .set(auth(admin.token));
+    assert.equal(res.status, 403);
+  });
+
+  it('lets a Talent claim an open task', async () => {
+    const admin = await registerUser('Admin One', 'admin1@test.com', 'Admin');
+    const talent = await registerUser('Talent One', 'talent1@test.com', 'Talent');
+    const created = await request(app)
+      .post('/api/tasks')
+      .set(auth(admin.token))
+      .send({ title: 'Claimable', status: 'Open' });
+    const res = await request(app)
+      .put(`/api/talent/tasks/${created.body._id}/claim`)
+      .set(auth(talent.token));
+    assert.equal(res.status, 200);
+    assert.equal(String(res.body.assignedTo), String(talent.id));
+  });
 });
 
 describe('#8 — approval cascades to the parent task', () => {

@@ -36,6 +36,13 @@ const getMyTasks = async (req, res) => {
 // @access Talent
 const claimTask = async (req, res) => {
   try {
+    // #2 — claiming a task assigns it to the caller, and tasks may only be
+    // assigned to Talent users. Reject anyone else (e.g. an Admin) so the
+    // "only Talent can be assigned" rule holds on this route too.
+    if (req.user.role !== 'Talent') {
+      return res.status(403).json({ message: 'Only Talent users can claim tasks' });
+    }
+
     // Two talents can both pass the status === 'Open' check before either saves,
     // then both write Claimed. Proper fix: findOneAndUpdate({ _id, status: 'Open' })
     const task = await Task.findById(req.params.id);
